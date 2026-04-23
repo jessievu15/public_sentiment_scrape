@@ -1,0 +1,11 @@
+# ================== Bright Data ==================
+BRIGHT_DATA_USERNAME=YOUR_USERNAME
+BRIGHT_DATA_API_KEY=YOUR_API_KEY
+
+# ================== LinkedIn ==================
+LINKEDIN_EMAIL=YOUR_LINKEDIN_EMAIL
+LINKEDIN_PASSWORD=YOUR_LINKEDIN_PASSWORD
+
+# ================== AWS ==================
+AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_KEY

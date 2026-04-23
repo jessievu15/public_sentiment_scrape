@@ -8,28 +8,9 @@ from html.parser import HTMLParser
 
 # ---- Config ------------------------------------------------------
 TIER = "public-sentiment"
+DATASET = "news"
 BUCKET = "p000268ds-medibank-intelligence"
-
 CUTOFF_DATE = datetime.now(timezone.utc) - timedelta(days=7)
-
-# keywords for filtering articles
-KEYWORDS = {
-    "health": [
-        "health", "medical", "medicine", "hospital", "clinic", "disease", 
-        "illness", "mental health", "surgery", "cancer", "vaccine", 
-        "patient", "pandemic", "medicare", "pharmaceutical", 
-        "therapy", "diagnosis", "treatment", "wellbeing", "disability", 
-        "emergency", "ambulance"],
-    "ai": [
-        "artificial intelligence", "machine learning", "deep learning",
-        "neural network", "natural language processing", "technology",
-        "automation", "robotics", "data science", "algorithm"],
-    "phi": [
-        "medibank", "bupa", "nib", "hcf", "hbf", "insurance", 
-        "private health", "insurer", "provate health insurance", 
-        "health fund", "health cover"]
-}
-
 SOURCES = {
     "abc": {
         "url": "https://www.abc.net.au/",
@@ -53,6 +34,21 @@ SOURCES = {
             "https://www.theguardian.com/au/rss" # the guardian top stories
         ],
     }
+}
+
+# keywords for filtering articles
+KEYWORDS = {
+    "phi": [
+        "medibank", "bupa", "nib", "hcf", "hbf",
+        "private health insurance", "health fund", 
+        "health cover", "health insurer"
+    ],
+    "health_tech": [
+        "health technology", "digital health", "health ai",
+        "medical ai", "health innovation", "medtech",
+        "telehealth", "health data", "wearable health",
+        "health automation", "clinical ai", "precision medicine"
+    ]
 }
 
 # ---- Helper Functions ------------------------------------------------------
@@ -95,13 +91,13 @@ def parse_date(date_str: str) -> datetime | None:
             continue
     return None
 
-# make sure articles contain at least 2 keyword groups (health, ai, phi companies)
-def matches_keywords(text: str, min_matches: int = 2) -> bool:
+# make sure articles contain both 2 keyword groups
+def matches_keywords(text: str, matches: int = 2) -> bool:
     text = text.lower()
     groups_matched = sum(
         any(kw in text for kw in kws) for kws in KEYWORDS.values()
     )
-    return groups_matched >= min_matches
+    return groups_matched == matches
 
 # ---- Main Scraping Logic ------------------------------------------------------
 def fetch_feed(feed_url: str) -> list[dict]:
@@ -177,9 +173,9 @@ def scrape_source(source_id: str, source_config: dict) -> str:
 
     for i, article in enumerate(all_articles, start=1):
         lines.append(f"{i}. {article['title']}")
-        lines.append(f"   Published: {article['pub_date']}")
-        lines.append(f"   Source: {article['url']}")
-        lines.append(f"   Content:{article['description']}")
+        lines.append(f"Published: {article['pub_date']}")
+        lines.append(f"Source: {article['url']}")
+        lines.append(f"Content:{article['description']}")
         lines.append(" \n ")
     
     return " \n ".join(lines)
@@ -189,6 +185,7 @@ def build_payload(source_id: str, source_url:str, content: str) -> dict:
     return {
         "source": source_id,
         "tier": TIER,
+        "dataset": DATASET,
         "scraped_at": datetime.now(timezone.utc).isoformat(),
         "url": source_url,
         "content": content
@@ -196,7 +193,7 @@ def build_payload(source_id: str, source_url:str, content: str) -> dict:
 
 def upload_to_s3(payload: dict) -> None:
     s3  = boto3.client("s3", region_name="ap-southeast-2")
-    key = f"raw/{payload['tier']}/{payload['source']}_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.json"
+    key = f"raw/{payload['tier']}/{payload['source']}_{payload['dataset']}_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.json"
     s3.put_object(
         Bucket=BUCKET, 
         Key=key,
