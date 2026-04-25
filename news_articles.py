@@ -73,7 +73,7 @@ class MLStripper(HTMLParser):
     def get_data(self):
         return ''.join(self.parts).strip()
 
-def strip_html(raw: str)   -> str:
+def strip_html(raw: str) -> str:
     stripper = MLStripper()
     stripper.feed(raw or "")
     return stripper.get_data()
