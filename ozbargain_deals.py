@@ -12,7 +12,7 @@ SOURCE = "ozbargain"
 DATASET = "deals"
 TIER   = "public-sentiment"
 URL = "https://www.ozbargain.com.au"
-BUCKET = "p000268ds-medibank-intelligence"
+BUCKET = "rmit-publicsentiment-demo-397348546955-ap-southeast-2-an"
 
 RSS_FEED_URL = "https://www.ozbargain.com.au/deals/medibank.com.au/feed"
 CUTOFF_DATE = datetime.now(timezone.utc) - timedelta(days=30)
@@ -46,7 +46,7 @@ def parse_date(date_str: str) -> datetime | None:
         return datetime.strptime(date_str.strip(), DATE_FORMAT)
     except ValueError:
         pass
-    
+
     try:
         return datetime.fromisoformat(date_str.strip())
     except ValueError:
@@ -178,7 +178,7 @@ def build_payload(content: list[dict]) -> dict:
     }
 
 def upload_to_s3(payload: dict) -> None:
-    s3  = boto3.client("s3", region_name="us-east-1")
+    s3  = boto3.client("s3", region_name="ap-southeast-2")
     key = f"raw/{payload['tier']}/{payload['source']}_{payload['dataset']}_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.json"
     s3.put_object(
         Bucket=BUCKET, 

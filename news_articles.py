@@ -9,8 +9,8 @@ from html.parser import HTMLParser
 # ---- Config ------------------------------------------------------
 TIER = "public-sentiment"
 DATASET = "news"
-BUCKET = "p000268ds-medibank-intelligence"
-CUTOFF_DATE = datetime.now(timezone.utc) - timedelta(days=7)
+BUCKET = "rmit-publicsentiment-demo-397348546955-ap-southeast-2-an"
+CUTOFF_DATE = datetime.now(timezone.utc) - timedelta(days=60)
 SOURCES = {
     "abc": {
         "url": "https://www.abc.net.au/",
@@ -51,6 +51,7 @@ KEYWORDS = {
     ]
 }
 
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 # ---- Helper Functions ------------------------------------------------------
 
 ALL_KEYWORDS = [kw.lower() for kws in KEYWORDS.values() for kw in kws]
@@ -101,10 +102,9 @@ def matches_keywords(text: str, matches: int = 2) -> bool:
 
 # ---- Main Scraping Logic ------------------------------------------------------
 def fetch_feed(feed_url: str) -> list[dict]:
-    headers = {"User-Agent": "Mozilla/5.0"}
 
     try:
-        response = requests.get(feed_url, timeout=10, headers=headers)
+        response = requests.get(feed_url, timeout=10, headers=HEADERS)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Error fetching feed {feed_url}: {e}")
@@ -193,7 +193,7 @@ def build_payload(source_id: str, source_url:str, content: str) -> dict:
 
 def upload_to_s3(payload: dict) -> None:
     s3  = boto3.client("s3", region_name="ap-southeast-2")
-    key = f"raw/{payload['tier']}/{payload['source']}_{payload['dataset']}_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.json"
+    key = f"raw/{payload['tier']}/{payload['source']}_{payload['dataset']}_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.json"
     s3.put_object(
         Bucket=BUCKET, 
         Key=key,
@@ -209,7 +209,17 @@ def save_local(payload: dict, directory: str = ".") -> None:
         json.dump(payload, fh, ensure_ascii=False, indent=2)
     print(f"Saved locally: {path}")
 
-# ---- Main Execution ------------------------------------------------------
+def lambda_handler(event, context):
+    for source_id, source_cfg in SOURCES.items():
+        content = scrape_source(source_id, source_cfg)
+        if not content:
+            print(f"[SKIP] {source_id} — no content.")
+            continue
+        payload = build_payload(source_id, source_cfg["url"], content)
+        upload_to_s3(payload)
+    return {"statusCode": 200, "body": "Done"}
+
+'''# ---- Main Execution ------------------------------------------------------
 if __name__ == "__main__":
  
     parser = argparse.ArgumentParser(description="RSS news scraper — PHI / health / AI")
@@ -235,5 +245,5 @@ if __name__ == "__main__":
         else:
             upload_to_s3(payload)
 
-
+'''
 # run "python news_scrape.py --local data" to save locally to a "data" directory instead of uploading to S3 to view the scraped content

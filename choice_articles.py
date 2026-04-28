@@ -12,7 +12,7 @@ SOURCE = "choice"
 DATASET = "articles"
 TIER   = "public-sentiment"
 BASE_SEARCH_URL = "https://www.choice.com.au/?s=Medibank&tab=articles"
-BUCKET = "p000268ds-medibank-intelligence"
+BUCKET = "rmit-publicsentiment-demo-397348546955-ap-southeast-2-an"
 
 CUTOFF_DATE = datetime.now(timezone.utc) - timedelta(days=7)
 MAX_PAGES = 10

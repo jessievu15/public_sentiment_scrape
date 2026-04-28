@@ -12,7 +12,7 @@ SOURCE = "canstar"
 DATASET = "awards"
 TIER   = "public-sentiment"
 URL    = "https://www.canstar.com.au/star-ratings-awards/" # url for all canstar awards
-BUCKET = "p000268ds-medibank-intelligence"
+BUCKET = "rmit-publicsentiment-demo-397348546955-ap-southeast-2-an"
 
 INSURANCE_PROVIDERS = "medibank"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
