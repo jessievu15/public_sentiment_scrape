@@ -33,7 +33,8 @@ SOURCES = {
     "theguardian": {
         "url": "https://www.theguardian.com/au",
         "feeds": [
-            "https://www.theguardian.com/au/rss"
+            "https://www.theguardian.com/au/rss",
+            "https://www.theguardian.com/australia-news/health/rss"
         ],
     }
 }
@@ -114,7 +115,7 @@ def matches_keywords(text: str, matches: int = 1) -> bool:
 def fetch_article_text(url: str) -> str:
     """Fetch and extract plain text from a full article page."""
     try:
-        response = requests.get(url, timeout=10, headers=HEADERS)
+        response = requests.get(url, timeout=20, headers=HEADERS)
         response.raise_for_status()
 
         # trafilatura extracts only the main article body
