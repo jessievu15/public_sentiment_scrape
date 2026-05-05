@@ -250,7 +250,7 @@ def lambda_handler(event, context):
         upload_to_s3(payload)
     return {"statusCode": 200, "body": "Done"}
 
-'''
+
 # ---- Local Execution ------------------------------------------------------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RSS news scraper — PHI / health / AI")
@@ -275,6 +275,6 @@ if __name__ == "__main__":
             save_local(payload, args.local)
         else:
             upload_to_s3(payload)
-'''
+
 
 # run "python news_articles.py --local data" to save locally
